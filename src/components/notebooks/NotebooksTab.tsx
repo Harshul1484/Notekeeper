@@ -7,6 +7,7 @@ import { useUI } from "../../store/ui";
 import type { Folder } from "../../types";
 import { CARD_GRID } from "../focus/FocusTab";
 import { PillButton } from "../ui/Buttons";
+import { Tooltip } from "../ui/Tooltip";
 import { SectionLabel } from "../ui/SectionLabel";
 import { NotebookRow, NotebookTile } from "./NotebookTile";
 
@@ -14,19 +15,20 @@ function LayoutToggle() {
   const layout = useUI((s) => s.notebookLayout);
   const set = useUI((s) => s.set);
   const opt = (value: "grid" | "list", label: string, Icon: typeof RiListUnordered) => (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={layout === value}
-      title={label}
-      onClick={() => set({ notebookLayout: value })}
-      className={cn(
-        "grid h-6 w-7 place-items-center rounded-md transition-colors duration-150",
-        layout === value ? "bg-panel text-ink shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-muted hover:text-ink",
-      )}
-    >
-      <Icon size={14} />
-    </button>
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={layout === value}
+        onClick={() => set({ notebookLayout: value })}
+        className={cn(
+          "grid h-6 w-7 place-items-center rounded-md transition-colors duration-150",
+          layout === value ? "bg-panel text-ink shadow-[0_1px_2px_rgba(0,0,0,0.06)]" : "text-muted hover:text-ink",
+        )}
+      >
+        <Icon size={14} />
+      </button>
+    </Tooltip>
   );
   return (
     <div className="flex rounded-lg border border-line bg-window p-0.5">
@@ -52,7 +54,7 @@ export function NotebooksTab({ folder }: { folder: Folder }) {
         <span>
           Notebooks <span className="text-muted tabular-nums">({notebooks.length})</span>
         </span>
-        <PillButton onClick={() => createNotebookAndOpen(folder.id)} title="New notebook (N)">
+        <PillButton onClick={() => createNotebookAndOpen(folder.id)} title="New notebook" shortcut="N">
           <RiAddLine size={14} className="text-muted" /> New
         </PillButton>
       </SectionLabel>

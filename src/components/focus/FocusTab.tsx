@@ -141,7 +141,7 @@ export function FocusTab({ folder }: { folder: Folder }) {
           <span>
             Cards <span className="text-muted tabular-nums">({active.length})</span>
           </span>
-          <PillButton onClick={() => createCardAndOpen(folder.id)} title="New card (N)">
+          <PillButton onClick={() => createCardAndOpen(folder.id)} title="New card" shortcut="N">
             <RiAddLine size={14} className="text-muted" /> Add
           </PillButton>
           <SortMenu />

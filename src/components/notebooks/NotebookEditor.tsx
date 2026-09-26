@@ -19,10 +19,12 @@ import { cn, htmlToText } from "../../lib/util";
 import { useData } from "../../store/data";
 import { useUI } from "../../store/ui";
 import { IconButton } from "../ui/Buttons";
+import { Tooltip } from "../ui/Tooltip";
 import { ColorSwatches } from "../ui/ColorSwatches";
 import { Popover } from "../ui/Popover";
 import { TagEditor } from "../ui/TagEditor";
 import { EditorToolbar } from "./EditorToolbar";
+import { imageFiles, insertImages } from "./images";
 
 const SAVE_DELAY = 500;
 
@@ -56,6 +58,13 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
   const set = useUI((s) => s.set);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [notice, setNotice] = useState("");
+  const noticeTimer = useRef<number | null>(null);
+  const showNotice = (msg: string) => {
+    setNotice(msg);
+    if (noticeTimer.current) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(""), 5000);
+  };
   const pending = useRef<number | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
 
@@ -67,11 +76,29 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
-      Image,
+      // Uploaded images are stored inline as data URLs; without this they'd be dropped on reload.
+      Image.configure({ allowBase64: true }),
       Placeholder.configure({ placeholder: "Start writing…" }),
     ],
     content: notebook.content,
-    editorProps: { attributes: { class: "notes-prose", "aria-label": "Notebook content" } },
+    editorProps: {
+      attributes: { class: "notes-prose", "aria-label": "Notebook content" },
+      // Images pasted or dropped from the device go straight into the note.
+      handlePaste: (view, event) => {
+        const files = imageFiles(event.clipboardData?.files);
+        if (!files.length) return false;
+        void insertImages(view, files, undefined, showNotice);
+        return true;
+      },
+      handleDrop: (view, event, _slice, moved) => {
+        const files = moved ? [] : imageFiles(event.dataTransfer?.files);
+        if (!files.length) return false;
+        event.preventDefault();
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
+        void insertImages(view, files, pos, showNotice);
+        return true;
+      },
+    },
     onUpdate: ({ editor: e }) => {
       setSaveState("saving");
       if (pending.current) window.clearTimeout(pending.current);
@@ -134,6 +161,13 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
           <span className="truncate">{folder?.name ?? "Back"}</span>
         </button>
         <div className="ml-auto flex items-center gap-1">
+          {notice && (
+            <Tooltip label={notice} side="bottom">
+              <span role="alert" className="anim-fade mr-2 max-w-[340px] truncate text-[12px] text-danger">
+                {notice}
+              </span>
+            </Tooltip>
+          )}
           <SaveIndicator state={saveState} />
           <IconButton
             aria-label={notebook.pinned ? "Unpin notebook" : "Pin notebook"}

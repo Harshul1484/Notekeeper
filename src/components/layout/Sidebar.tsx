@@ -11,6 +11,7 @@ import { useIsMobile } from "../../hooks/useMediaQuery";
 import { useResolvedTheme } from "../../hooks/useTheme";
 import { cn } from "../../lib/util";
 import { IconButton } from "../ui/Buttons";
+import { Tooltip } from "../ui/Tooltip";
 import { createFolderAndRename } from "../../store/actions";
 import { useQuickCounts } from "../../store/selectors";
 import { useUI } from "../../store/ui";
@@ -136,15 +137,16 @@ export function Sidebar() {
             <QuickLinks />
             <div className="mt-5 mb-1 flex items-center justify-between pr-1 pl-2">
               <h2 className="text-[13px] font-semibold text-ink">My folders</h2>
-              <button
-                type="button"
-                aria-label="New folder"
-                title="New folder"
-                onClick={() => createFolderAndRename(null)}
-                className="grid size-6 place-items-center rounded-md text-muted transition-colors hover:bg-hover hover:text-ink"
-              >
-                <RiAddLine size={15} />
-              </button>
+              <Tooltip label="New folder">
+                <button
+                  type="button"
+                  aria-label="New folder"
+                  onClick={() => createFolderAndRename(null)}
+                  className="grid size-6 place-items-center rounded-md text-muted transition-colors hover:bg-hover hover:text-ink"
+                >
+                  <RiAddLine size={15} />
+                </button>
+              </Tooltip>
             </div>
             <FolderTree />
           </>

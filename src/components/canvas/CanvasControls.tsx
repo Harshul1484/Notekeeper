@@ -19,6 +19,7 @@ import { pastelBg, PASTELS } from "../../lib/colors";
 import { cn } from "../../lib/util";
 import type { Pastel } from "../../types";
 import { ColorSwatches } from "../ui/ColorSwatches";
+import { Tooltip } from "../ui/Tooltip";
 
 export type Tool = "select" | "sticky" | "text" | "section" | "arrow";
 
@@ -45,6 +46,7 @@ function ToolButton({
   active,
   disabled,
   onClick,
+  tooltipSide = "bottom",
 }: {
   icon: RemixiconComponentType;
   label: string;
@@ -52,22 +54,24 @@ function ToolButton({
   active?: boolean;
   disabled?: boolean;
   onClick: () => void;
+  tooltipSide?: "top" | "bottom";
 }) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      aria-pressed={active}
-      title={shortcut ? `${label} (${shortcut})` : label}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "grid size-8 place-items-center rounded-lg transition-colors duration-150 disabled:opacity-35 disabled:hover:bg-transparent",
-        active ? "bg-ink-button text-window" : "text-ink-2 hover:bg-hover hover:text-ink",
-      )}
-    >
-      <Icon size={17} />
-    </button>
+    <Tooltip label={label} shortcut={shortcut} side={tooltipSide}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={active}
+        disabled={disabled}
+        onClick={onClick}
+        className={cn(
+          "grid size-8 place-items-center rounded-lg transition-colors duration-150 disabled:opacity-35 disabled:hover:bg-transparent",
+          active ? "bg-ink-button text-window" : "text-ink-2 hover:bg-hover hover:text-ink",
+        )}
+      >
+        <Icon size={17} />
+      </button>
+    </Tooltip>
   );
 }
 
@@ -112,8 +116,8 @@ export function CanvasToolbar({
       ))}
       <ToolButton icon={RiImageLine} label="Image" onClick={onImage} />
       <Divider />
-      <ToolButton icon={RiArrowGoBackLine} label="Undo" shortcut="Ctrl+Z" disabled={!canUndo} onClick={onUndo} />
-      <ToolButton icon={RiArrowGoForwardLine} label="Redo" shortcut="Ctrl+Shift+Z" disabled={!canRedo} onClick={onRedo} />
+      <ToolButton icon={RiArrowGoBackLine} label="Undo" shortcut="Mod+Z" disabled={!canUndo} onClick={onUndo} />
+      <ToolButton icon={RiArrowGoForwardLine} label="Redo" shortcut="Mod+Shift+Z" disabled={!canRedo} onClick={onRedo} />
     </Floating>
   );
 }
@@ -143,7 +147,7 @@ export function SelectionBar({
         </>
       )}
       <Divider />
-      <ToolButton icon={RiFileCopyLine} label="Duplicate" shortcut="Ctrl+D" onClick={onDuplicate} />
+      <ToolButton icon={RiFileCopyLine} label="Duplicate" shortcut="Mod+D" onClick={onDuplicate} />
       <ToolButton icon={RiDeleteBinLine} label="Delete" shortcut="Backspace" onClick={onDelete} />
     </Floating>
   );
@@ -164,18 +168,20 @@ export function ZoomControls({
 }) {
   return (
     <Floating className="right-3 bottom-3">
-      <ToolButton icon={RiSubtractLine} label="Zoom out" onClick={onZoomOut} />
-      <button
-        type="button"
-        onClick={onReset}
-        title="Reset to 100%"
-        className="h-8 w-12 rounded-lg text-[12px] text-ink-2 tabular-nums hover:bg-hover hover:text-ink"
-      >
-        {Math.round(zoom * 100)}%
-      </button>
-      <ToolButton icon={RiAddLine} label="Zoom in" onClick={onZoomIn} />
+      <ToolButton icon={RiSubtractLine} label="Zoom out" tooltipSide="top" onClick={onZoomOut} />
+      <Tooltip label="Reset to 100%" side="top">
+        <button
+          type="button"
+          onClick={onReset}
+          aria-label={`Zoom ${Math.round(zoom * 100)}%, reset to 100%`}
+          className="h-8 w-12 rounded-lg text-[12px] text-ink-2 tabular-nums hover:bg-hover hover:text-ink"
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+      </Tooltip>
+      <ToolButton icon={RiAddLine} label="Zoom in" tooltipSide="top" onClick={onZoomIn} />
       <Divider />
-      <ToolButton icon={RiFullscreenLine} label="Fit to screen" shortcut="Shift+1" onClick={onFit} />
+      <ToolButton icon={RiFullscreenLine} label="Fit to screen" shortcut="Shift+1" tooltipSide="top" onClick={onFit} />
     </Floating>
   );
 }

@@ -32,4 +32,15 @@ export const readFileAsDataURL = (file: File) =>
     reader.readAsDataURL(file);
   });
 
-export const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
+
+/** "Mod+Shift+Z" → "⌘⇧Z" on Mac, "Ctrl+Shift+Z" elsewhere. */
+export const formatShortcut = (keys: string) =>
+  isMac
+    ? keys
+        .replace(/Mod\+?/g, "⌘")
+        .replace(/Shift\+?/g, "⇧")
+        .replace(/Alt\+?/g, "⌥")
+    : keys.replace(/Mod/g, "Ctrl");
+
+export const plural =(n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;

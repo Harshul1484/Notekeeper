@@ -4,6 +4,7 @@ import { daysUntil, dueLabel } from "../../lib/date";
 import { cn } from "../../lib/util";
 import type { FocusCard } from "../../types";
 import { ProgressRing } from "../ui/ProgressRing";
+import { Tooltip } from "../ui/Tooltip";
 
 interface Props {
   card: FocusCard;
@@ -67,9 +68,13 @@ export function FocusCardTile({ card, folderName, onOpen, fading }: Props) {
       {card.detail && <p className="mt-1.5 line-clamp-3 text-[12.5px] leading-[1.45] text-ink-2/85">{card.detail}</p>}
 
       <div className="mt-auto flex items-center justify-between pt-4 text-[12px] text-ink-2/80">
-        <span className="flex items-center gap-1" title="Linked notebooks">
-          <RiBook2Line size={14} />
-          <span className="tabular-nums">{card.linkedNotebookIds.length}</span>
+        <span className="flex items-center gap-1">
+          <Tooltip label="Linked notebooks">
+            <span className="flex items-center gap-1">
+              <RiBook2Line size={14} />
+              <span className="tabular-nums">{card.linkedNotebookIds.length}</span>
+            </span>
+          </Tooltip>
           {card.checklist.length > 0 && (
             <span className="ml-2 tabular-nums">
               {card.checklist.filter((k) => k.done).length}/{card.checklist.length}

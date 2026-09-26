@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useData } from "../../store/data";
 import type { Folder } from "../../types";
 import { AutoTextarea } from "../ui/AutoTextarea";
+import { Tooltip } from "../ui/Tooltip";
 
 export function FolderHeader({ folder }: { folder: Folder }) {
   const updateFolder = useData((s) => s.updateFolder);
@@ -53,15 +54,16 @@ export function FolderHeader({ folder }: { folder: Folder }) {
             >
               {folder.name || "Untitled folder"}
             </h1>
-            <button
-              type="button"
-              aria-label="Rename folder"
-              title="Rename"
-              onClick={() => setEditing(true)}
-              className="grid size-7 shrink-0 place-items-center rounded-full border border-line-strong bg-panel/70 text-ink-2 transition-colors duration-150 hover:bg-panel hover:text-ink"
-            >
-              <RiPencilLine size={14} />
-            </button>
+            <Tooltip label="Rename folder">
+              <button
+                type="button"
+                aria-label="Rename folder"
+                onClick={() => setEditing(true)}
+                className="grid size-7 shrink-0 place-items-center rounded-full border border-line-strong bg-panel/70 text-ink-2 transition-colors duration-150 hover:bg-panel hover:text-ink"
+              >
+                <RiPencilLine size={14} />
+              </button>
+            </Tooltip>
           </>
         )}
       </div>

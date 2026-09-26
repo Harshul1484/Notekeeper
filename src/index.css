@@ -60,6 +60,8 @@
   --overlay: rgba(42, 37, 33, 0.16);
   --code-bg: #f3ece2;
   --link: #3f63b8;
+  --tooltip-bg: #2a2521;
+  --tooltip-text: #fbf8f3;
 
   --shadow-window: 0 20px 60px rgba(0, 0, 0, 0.08);
   --shadow-float: 0 8px 28px rgba(60, 44, 30, 0.1);
@@ -125,6 +127,8 @@
   --overlay: rgba(0, 0, 0, 0.5);
   --code-bg: #2a241f;
   --link: #93b4f2;
+  --tooltip-bg: #3b342e;
+  --tooltip-text: #f3ece2;
 
   --shadow-window: 0 20px 60px rgba(0, 0, 0, 0.5);
   --shadow-float: 0 10px 32px rgba(0, 0, 0, 0.45);
