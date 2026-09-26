@@ -1,14 +1,535 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+/*
+ * Design tokens. Everything color-related lives here as CSS variables; the
+ * dark theme below redefines them. <html data-theme="light|dark"> is set before
+ * first paint by the inline script in index.html and kept in sync by useTheme.
+ */
+:root {
+  --window: #fbf8f3;
+  --sidebar: #f5efe6;
+  --panel: #fffdf9;
+  --tab: #eee4d7;
+  --tab-hover: #f3ebe0;
+
+  --border: #e7ddd0;
+  --border-strong: #d8cab8;
+
+  --text: #2a2521;
+  --text-2: #544b44;
+  --muted: #7b7169;
+  --subtle: #a39a91;
+
+  --chip: #ede3d6;
+  --chip-text: #5c5249;
+  --chip-count: #f8f2ea;
+
+  --hover: rgba(92, 82, 73, 0.07);
+  --active: rgba(92, 82, 73, 0.12);
+  --select: #6b8fd6;
+  --danger: #b4432f;
+  --ink-button: #3a332e;
+
+  --pastel-sage: #d7e9c6;
+  --pastel-lavender: #d9c8ef;
+  --pastel-butter: #eeeac2;
+  --pastel-sand: #e9dac6;
+  --pastel-blush: #f3cfdb;
+  --pastel-sky: #cfe1f0;
+  --pastel-peach: #f6d5be;
+
+  --folder-violet: #7c3aed;
+  --folder-blue: #2563eb;
+  --folder-green: #16a34a;
+  --folder-pink: #db2777;
+  --folder-orange: #ea580c;
+  --folder-amber: #ca8a04;
+  --folder-teal: #0d9488;
+  --folder-brown: #8b5e3c;
+
+  /* Surfaces layered on tinted cards: "raise" lifts (white in light mode),
+     "shade" tints (black in light mode). Both flip in dark mode. */
+  --raise: #ffffff;
+  --shade: #000000;
+  /* Mixed into pastels for card borders, and how strongly sections are tinted. */
+  --edge-mix: #4a3a2c;
+  --wash: 42%;
+
+  --arrow: rgba(84, 75, 68, 0.75);
+  --dot: rgba(92, 82, 73, 0.2);
+  --overlay: rgba(42, 37, 33, 0.16);
+  --code-bg: #f3ece2;
+  --link: #3f63b8;
+
+  --shadow-window: 0 20px 60px rgba(0, 0, 0, 0.08);
+  --shadow-float: 0 8px 28px rgba(60, 44, 30, 0.1);
+  --shadow-modal: 0 24px 70px rgba(42, 37, 33, 0.16);
+  --shadow-sticky: 0 1px 2px rgba(60, 44, 30, 0.06), 0 6px 18px rgba(60, 44, 30, 0.06);
+
+  --dur: 180ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  color-scheme: light;
+}
+
+/* Dark: warm charcoal "desk at night" — same hierarchy, inverted lightness. */
+:root[data-theme="dark"] {
+  --window: #1a1613;
+  --sidebar: #15120f;
+  --panel: #211c18;
+  --tab: #2a241f;
+  --tab-hover: #302923;
+
+  --border: #372f28;
+  --border-strong: #4a4036;
+
+  --text: #ede6dc;
+  --text-2: #cdc3b6;
+  --muted: #a1968a;
+  --subtle: #7a6f65;
+
+  --chip: #342c26;
+  --chip-text: #d8ccbf;
+  --chip-count: #26201b;
+
+  --hover: rgba(255, 240, 222, 0.06);
+  --active: rgba(255, 240, 222, 0.1);
+  --select: #8ba9e8;
+  --danger: #e58a70;
+  --ink-button: #ede6dc;
+
+  --pastel-sage: #2e3a2a;
+  --pastel-lavender: #373047;
+  --pastel-butter: #3b3926;
+  --pastel-sand: #3c3229;
+  --pastel-blush: #44303a;
+  --pastel-sky: #2a3646;
+  --pastel-peach: #46332a;
+
+  --folder-violet: #a78bfa;
+  --folder-blue: #60a5fa;
+  --folder-green: #4ade80;
+  --folder-pink: #f472b6;
+  --folder-orange: #fb923c;
+  --folder-amber: #fbbf24;
+  --folder-teal: #2dd4bf;
+  --folder-brown: #c4956a;
+
+  --raise: #0e0b09;
+  --shade: #ffffff;
+  --edge-mix: #f3e7da;
+  --wash: 72%;
+
+  --arrow: rgba(237, 230, 220, 0.55);
+  --dot: rgba(237, 230, 220, 0.11);
+  --overlay: rgba(0, 0, 0, 0.5);
+  --code-bg: #2a241f;
+  --link: #93b4f2;
+
+  --shadow-window: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 10px 32px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 24px 70px rgba(0, 0, 0, 0.55);
+  --shadow-sticky: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-window: var(--window);
+  --color-sidebar: var(--sidebar);
+  --color-panel: var(--panel);
+  --color-tab: var(--tab);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-chip: var(--chip);
+  --color-chip-ink: var(--chip-text);
+  --color-chip-count: var(--chip-count);
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-select: var(--select);
+  --color-danger: var(--danger);
+  --color-ink-button: var(--ink-button);
+  --color-raise: var(--raise);
+  --color-shade: var(--shade);
+
+  --font-serif: "Fraunces", "Source Serif 4", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--window);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(107, 143, 214, 0.22);
+}
+
+/* In the base layer so utilities (e.g. focus-visible:outline-none) can override. */
+@layer base {
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--select) 70%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+/* Thin, warm scrollbars */
+.scroll-soft {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ---------- Folder tabs ---------- */
+.folder-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--tab);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    height var(--dur) var(--ease);
+}
+
+.folder-tab:hover {
+  background: var(--tab-hover);
+  color: var(--text-2);
+}
+
+.folder-tab[data-active="true"] {
+  z-index: 2;
+  height: 41px;
+  margin-bottom: -1px;
+  color: var(--text);
+  background: var(--panel);
+}
+
+/* Hide the panel's top border under the active tab. A strip inside the tab's
+   side borders is more reliable than the -1px overlap at fractional display
+   scaling (125%, 150%), where a hairline seam can show through. */
+.folder-tab[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  background: var(--panel);
+}
+
+/* ---------- Checkbox ---------- */
+.check {
+  appearance: none;
+  flex: none;
+  display: inline-grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 28%, transparent);
+  background: color-mix(in srgb, var(--raise) 75%, transparent);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.check:hover {
+  border-color: color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+.check::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--window);
+  clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 26%, 86% 12%, 38% 72%);
+  transform: scale(0);
+  transition: transform 140ms var(--ease);
+}
+
+.check:checked {
+  background: var(--ink-button);
+  border-color: var(--ink-button);
+}
+
+.check:checked::after {
+  transform: scale(1);
+}
+
+/* ---------- Motion ---------- */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.anim-pop {
+  animation: pop-in 190ms var(--ease) both;
+}
+
+.anim-fade {
+  animation: fade-in 160ms ease-out both;
+}
+
+.anim-rise {
+  animation: rise-in 180ms var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------- Canvas ---------- */
+.canvas-dots {
+  background-color: var(--panel);
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.3px);
+}
+
+/* ---------- Notebook editor prose ---------- */
+.notes-prose {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text);
+  outline: none;
+  min-height: 50vh;
+}
+
+.notes-prose > * + * {
+  margin-top: 0.65em;
+}
+
+.notes-prose h1,
+.notes-prose h2,
+.notes-prose h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+
+.notes-prose h1 {
+  font-size: 28px;
+  margin-top: 1.2em;
+}
+
+.notes-prose h2 {
+  font-size: 22px;
+  margin-top: 1.1em;
+}
+
+.notes-prose h3 {
+  font-size: 18px;
+  margin-top: 1em;
+}
+
+.notes-prose ul,
+.notes-prose ol {
+  padding-left: 1.4em;
+}
+
+.notes-prose ul {
+  list-style: disc;
+}
+
+.notes-prose ol {
+  list-style: decimal;
+}
+
+.notes-prose li + li {
+  margin-top: 0.2em;
+}
+
+.notes-prose li::marker {
+  color: var(--subtle);
+}
+
+.notes-prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.1em;
+}
+
+.notes-prose ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7em;
+}
+
+.notes-prose ul[data-type="taskList"] li > label {
+  flex: none;
+  display: flex;
+  height: 1.7em;
+  align-items: center;
+  user-select: none;
+}
+
+.notes-prose ul[data-type="taskList"] li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-prose ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--subtle);
+  text-decoration: line-through;
+  text-decoration-color: var(--border-strong);
+}
+
+.notes-prose input[type="checkbox"] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  border-radius: 5px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 28%, transparent);
+  background: var(--panel);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+
+.notes-prose input[type="checkbox"]::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  background: var(--window);
+  clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 26%, 86% 12%, 38% 72%);
+  transform: scale(0);
+  transition: transform 140ms var(--ease);
+}
+
+.notes-prose input[type="checkbox"]:checked {
+  background: var(--ink-button);
+  border-color: var(--ink-button);
+}
+
+.notes-prose input[type="checkbox"]:checked::after {
+  transform: scale(1);
+}
+
+
+.notes-prose blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding: 0.1em 0 0.1em 1em;
+  color: var(--text-2);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.notes-prose code {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--chip);
+  color: var(--chip-text);
+  border-radius: 5px;
+  padding: 0.12em 0.35em;
+}
+
+.notes-prose pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9em 1.1em;
+  overflow-x: auto;
+}
+
+.notes-prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.notes-prose a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--link) 35%, transparent);
+  text-underline-offset: 2px;
+}
+
+.notes-prose img {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.notes-prose img.ProseMirror-selectednode {
+  outline: 2px solid var(--select);
+}
+
+.notes-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5em 0;
+}
+
+.notes-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--subtle);
 }
