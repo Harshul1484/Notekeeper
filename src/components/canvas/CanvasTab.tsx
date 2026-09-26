@@ -10,12 +10,15 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { RiArtboardLine, RiImageLine, RiStickyNoteLine } from "@remixicon/react";
 import { NEW_STICKY_EVENT } from "../../hooks/useGlobalHotkeys";
 import { imageFiles, imageSize, readImage } from "../../lib/images";
 import { clamp, isTypingTarget, uid } from "../../lib/util";
 import { useData } from "../../store/data";
 import { useUI, type Viewport } from "../../store/ui";
 import type { CanvasItem, Folder, Pastel } from "../../types";
+import { GhostButton, PrimaryButton } from "../ui/Buttons";
+import { EmptyState } from "../ui/EmptyState";
 import { ArrowLayer } from "./ArrowLayer";
 import { CanvasItemView } from "./CanvasItemView";
 import { CanvasToolbar, SelectionBar, ZoomControls, type Tool } from "./CanvasControls";
@@ -632,12 +635,27 @@ export function CanvasTab({ folder }: { folder: Folder }) {
         )}
       </div>
 
-      {items.length === 0 && (
-        <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="text-center">
-            <p className="font-serif text-[18px] font-medium text-ink-2">A blank canvas for big plans</p>
-            <p className="mt-1 text-[13px] text-muted">Double-click anywhere to add a sticky note, or pick a tool above.</p>
-          </div>
+      {items.length === 0 && !fileDragOver && (
+        <div className="pointer-events-none absolute inset-0 flex">
+          <EmptyState
+            icon={RiArtboardLine}
+            title="A blank canvas"
+            description="Map out plans with sticky notes, sections, and arrows. Double-click anywhere to add a note."
+            actions={
+              <div
+                className="pointer-events-auto flex flex-wrap justify-center gap-2"
+                onPointerDown={(e) => e.stopPropagation()}
+                onDoubleClick={(e) => e.stopPropagation()}
+              >
+                <PrimaryButton onClick={() => createSticky(viewportCenter())}>
+                  <RiStickyNoteLine size={16} /> Add a sticky note
+                </PrimaryButton>
+                <GhostButton onClick={() => fileRef.current?.click()} className="border border-line bg-panel">
+                  <RiImageLine size={16} /> Add an image
+                </GhostButton>
+              </div>
+            }
+          />
         </div>
       )}
 

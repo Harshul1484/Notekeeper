@@ -1,7 +1,8 @@
-import { RiArrowRightSLine, RiMoreLine } from "@remixicon/react";
+import { RiArrowRightSLine, RiFolderAddLine, RiMoreLine } from "@remixicon/react";
 import { createContext, useContext, useEffect, useRef, useState, type DragEvent } from "react";
 import { folderDot } from "../../lib/colors";
 import { cn } from "../../lib/util";
+import { createFolderAndRename } from "../../store/actions";
 import { folderSubtree, useData, type DropPosition } from "../../store/data";
 import { sortedChildren, useFolderCounts } from "../../store/selectors";
 import { useUI } from "../../store/ui";
@@ -24,6 +25,21 @@ export function FolderTree() {
   const [drop, setDrop] = useState<DragState["drop"]>(null);
   const counts = useFolderCounts();
   const roots = sortedChildren(folders, null);
+
+  if (!roots.length) {
+    return (
+      <div className="mx-1 mt-1 rounded-xl border border-dashed border-line-strong px-3 py-4 text-center">
+        <p className="text-[12.5px] leading-snug text-muted">Folders keep your cards, notebooks, and canvas together.</p>
+        <button
+          type="button"
+          onClick={() => createFolderAndRename(null)}
+          className="mt-2.5 inline-flex h-7 items-center gap-1.5 rounded-lg bg-ink-button px-2.5 text-[12.5px] font-medium text-window transition-opacity hover:opacity-90"
+        >
+          <RiFolderAddLine size={14} /> Create a folder
+        </button>
+      </div>
+    );
+  }
 
   return (
     <DragCtx.Provider value={{ dragId, drop, setDragId, setDrop, counts }}>
@@ -137,14 +153,14 @@ function FolderNode({ folder }: { folder: Folder }) {
           openMenu(e.clientX, e.clientY);
         }}
         className={cn(
-          "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 text-[13.5px] transition-colors duration-150 select-none",
+          "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 pl-1.5 text-[13.5px] transition-colors duration-150 select-none",
           active ? "bg-active font-medium text-ink" : "text-ink-2 hover:bg-hover",
           drop === "inside" && "bg-select/10 ring-1 ring-select/60",
           drag.dragId === folder.id && "opacity-50",
         )}
       >
-        {drop === "before" && <span className="absolute -top-px right-1 left-5 h-0.5 rounded-full bg-select" />}
-        {drop === "after" && <span className="absolute right-1 -bottom-px left-5 h-0.5 rounded-full bg-select" />}
+        {drop === "before" && <span className="absolute -top-px right-1 left-7 h-0.5 rounded-full bg-select" />}
+        {drop === "after" && <span className="absolute right-1 -bottom-px left-7 h-0.5 rounded-full bg-select" />}
 
         <button
           type="button"
@@ -154,7 +170,7 @@ function FolderNode({ folder }: { folder: Folder }) {
             e.stopPropagation();
             if (hasChildren) toggleExpanded(folder.id);
           }}
-          className={cn("grid h-full w-[18px] shrink-0 place-items-center text-subtle", hasChildren && "hover:text-ink")}
+          className={cn("grid h-full w-5 shrink-0 place-items-center rounded-md text-subtle", hasChildren && "hover:text-ink")}
         >
           {hasChildren && (
             <RiArrowRightSLine
@@ -191,7 +207,7 @@ function FolderNode({ folder }: { folder: Folder }) {
       </div>
 
       {hasChildren && expanded && (
-        <ul role="group" className="anim-fade mt-px ml-[22px] flex flex-col gap-px border-l border-line pl-1">
+        <ul role="group" className="anim-fade mt-px ml-[30px] flex flex-col gap-px border-l border-line pl-1">
           {children.map((c) => (
             <FolderNode key={c.id} folder={c} />
           ))}

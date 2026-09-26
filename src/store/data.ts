@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { createSeed, type SeedData } from "../data/seed";
+import { createSeed, goalsCanvas, PREVIOUS_GOALS_TEMPLATES, type SeedData } from "../data/seed";
 import { FOLDER_COLORS } from "../lib/colors";
 import { uid } from "../lib/util";
 import type { CanvasItem, FocusCard, Folder, Notebook } from "../types";
@@ -28,6 +28,34 @@ interface DataActions {
 }
 
 export type DataState = SeedData & DataActions;
+
+/** Ids used by the v1 sample data (the "Studio Work" demo set). */
+const V1_SAMPLE_IDS = new Set(
+  (
+    "f-studio f-launch f-hiring f-personal f-reading f-home f-goals " +
+    "c-runofshow c-copy c-invoice c-onboarding c-retainer c-offsite c-figma c-presskit c-pricingqa " +
+    "c-loop c-passport c-grandma c-dentist c-overstory c-shelves c-themes " +
+    "n-runofshow n-harbor n-rituals n-pricing n-overstory n-weekly n-themes " +
+    "cv-title cv-week cv-month cv-year cv-s1 cv-s2 cv-s3 cv-s4 cv-s5 cv-s6 cv-a1 cv-a2 cv-a3"
+  ).split(" "),
+);
+
+/** True when saved data holds nothing but (possibly trimmed) v1 sample items. */
+function isOnlyV1Sample(data: Partial<SeedData> | undefined) {
+  if (!data?.folders?.length) return false;
+  const all = [...data.folders, ...(data.cards ?? []), ...(data.notebooks ?? []), ...(data.canvasItems ?? [])];
+  return all.every((x) => V1_SAMPLE_IDS.has(x.id));
+}
+
+/** Swaps an earlier Goals template for the current one, if it was never edited. */
+function upgradeGoalsCanvas(data: SeedData): SeedData {
+  const goals = (data.canvasItems ?? []).filter((i) => i.folderId === "f-goals");
+  const untouched =
+    goals.length > 0 &&
+    PREVIOUS_GOALS_TEMPLATES.some((tpl) => goals.every((i) => i.id in tpl && tpl[i.id] === i.content));
+  if (!untouched) return data;
+  return { ...data, canvasItems: [...data.canvasItems.filter((i) => i.folderId !== "f-goals"), ...goalsCanvas()] };
+}
 
 /** `id` plus every folder nested below it. */
 export function folderSubtree(folders: Folder[], id: string): Set<string> {
@@ -192,7 +220,16 @@ export const useData = create<DataState>()(
     }),
     {
       name: "notes.data.v1",
-      version: 1,
+      // v2: new starter content. Saved data that is only the old sample set is
+      // swapped for it; anything the user created keeps their data untouched.
+      // v3/v4: the Goals canvas template changed; an untouched earlier copy is upgraded.
+      version: 4,
+      migrate: (persisted, version) => {
+        const data = persisted as SeedData;
+        if (version < 2 && isOnlyV1Sample(data)) return createSeed();
+        if (version < 4) return upgradeGoalsCanvas(data);
+        return data;
+      },
       storage: createJSONStorage(() => localStorage),
       partialize: ({ folders, cards, notebooks, canvasItems }) => ({
         folders,

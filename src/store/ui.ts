@@ -54,7 +54,7 @@ export const useUI = create<UIState>()(
       sidebarCollapsed: false,
       theme: "system",
       drawerOpen: false,
-      expanded: { "f-studio": true, "f-personal": true },
+      expanded: { "f-work": true },
       openCardId: null,
       openNotebookId: null,
       renamingFolderId: null,

@@ -1,4 +1,4 @@
-import { RiAddLine, RiLayoutGridLine, RiListUnordered } from "@remixicon/react";
+import { RiAddLine, RiBook2Line, RiLayoutGridLine, RiListUnordered } from "@remixicon/react";
 import { useMemo } from "react";
 import { cn } from "../../lib/util";
 import { createNotebookAndOpen } from "../../store/actions";
@@ -6,7 +6,8 @@ import { useData } from "../../store/data";
 import { useUI } from "../../store/ui";
 import type { Folder } from "../../types";
 import { CARD_GRID } from "../focus/FocusTab";
-import { PillButton } from "../ui/Buttons";
+import { PillButton, PrimaryButton } from "../ui/Buttons";
+import { EmptyState } from "../ui/EmptyState";
 import { Tooltip } from "../ui/Tooltip";
 import { SectionLabel } from "../ui/SectionLabel";
 import { NotebookRow, NotebookTile } from "./NotebookTile";
@@ -49,7 +50,7 @@ export function NotebooksTab({ folder }: { folder: Folder }) {
   const open = (id: string) => set({ openNotebookId: id });
 
   return (
-    <div className="p-4 sm:p-5 md:p-6">
+    <div className="flex flex-1 flex-col p-4 sm:p-5 md:p-6">
       <SectionLabel right={<LayoutToggle />}>
         <span>
           Notebooks <span className="text-muted tabular-nums">({notebooks.length})</span>
@@ -60,10 +61,17 @@ export function NotebooksTab({ folder }: { folder: Folder }) {
       </SectionLabel>
 
       {notebooks.length === 0 ? (
-        <div className="mt-4 grid place-items-center rounded-[14px] border border-dashed border-line-strong px-6 py-12 text-center">
-          <p className="font-serif text-[17px] font-medium text-ink-2">No notebooks yet</p>
-          <p className="mt-1 text-[13px] text-muted">Longer notes, meeting logs, and drafts live here.</p>
-        </div>
+        <EmptyState
+          icon={RiBook2Line}
+          title="No notebooks yet"
+          description="Notebooks are for longer writing, like meeting notes, drafts, and plans, with checklists and images."
+          actions={
+            <PrimaryButton onClick={() => createNotebookAndOpen(folder.id)}>
+              <RiAddLine size={16} /> New notebook
+            </PrimaryButton>
+          }
+          shortcut="N"
+        />
       ) : layout === "grid" ? (
         <div className={cn(CARD_GRID, "mt-4")}>
           {notebooks.map((n) => (

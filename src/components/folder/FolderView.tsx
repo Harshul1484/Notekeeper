@@ -19,11 +19,14 @@ export function FolderView({ folder }: { folder: Folder }) {
           role="tabpanel"
           aria-labelledby={`tab-${tab}`}
           className={cn(
-            "relative flex-1 rounded-tr-[14px] rounded-b-[14px] border border-line bg-panel",
-            tab === "canvas" ? "min-h-[520px] overflow-hidden" : "min-h-[360px]",
+            "relative flex flex-1 flex-col rounded-tr-[14px] rounded-b-[14px] border border-line bg-panel",
+            tab === "canvas" ? "min-h-[520px] overflow-hidden" : "min-h-[420px]",
           )}
         >
-          <div key={`${folder.id}-${tab}`} className={cn("anim-rise", tab === "canvas" && "absolute inset-0")}>
+          <div
+            key={`${folder.id}-${tab}`}
+            className={cn("anim-rise", tab === "canvas" ? "absolute inset-0" : "flex flex-1 flex-col")}
+          >
             {tab === "focus" && <FocusTab folder={folder} />}
             {tab === "notebooks" && <NotebooksTab folder={folder} />}
             {tab === "canvas" && <CanvasTab folder={folder} />}

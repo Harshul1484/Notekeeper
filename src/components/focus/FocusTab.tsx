@@ -1,4 +1,12 @@
-import { RiAddLine, RiArrowRightSLine, RiArrowUpDownLine, RiCheckLine } from "@remixicon/react";
+import {
+  RiAddLine,
+  RiArrowRightSLine,
+  RiArrowUpDownLine,
+  RiCheckDoubleLine,
+  RiCheckLine,
+  RiFilterOffLine,
+  RiStickyNoteLine,
+} from "@remixicon/react";
 import { useMemo, useState } from "react";
 import { cn } from "../../lib/util";
 import { createCardAndOpen } from "../../store/actions";
@@ -6,7 +14,8 @@ import { useData } from "../../store/data";
 import { sortCards } from "../../store/selectors";
 import { useUI } from "../../store/ui";
 import type { CardSort, Folder } from "../../types";
-import { PillButton } from "../ui/Buttons";
+import { GhostButton, PillButton, PrimaryButton } from "../ui/Buttons";
+import { EmptyState } from "../ui/EmptyState";
 import { MenuItem, Popover } from "../ui/Popover";
 import { SectionLabel } from "../ui/SectionLabel";
 import { FocusCardTile } from "./FocusCardTile";
@@ -131,12 +140,17 @@ export function FocusTab({ folder }: { folder: Folder }) {
   }, [active, tagFilter, sort]);
 
   const open = (id: string) => set({ openCardId: id });
+  const newCard = (
+    <PrimaryButton onClick={() => createCardAndOpen(folder.id)}>
+      <RiAddLine size={16} /> New card
+    </PrimaryButton>
+  );
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-5 md:p-6">
+    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-5 md:p-6">
       {tagCounts.length > 0 && <TagChips counts={tagCounts} />}
 
-      <div>
+      <div className={cn(!visible.length && "flex flex-1 flex-col")}>
         <SectionLabel>
           <span>
             Cards <span className="text-muted tabular-nums">({active.length})</span>
@@ -159,22 +173,29 @@ export function FocusTab({ folder }: { folder: Folder }) {
               />
             ))}
           </div>
+        ) : active.length ? (
+          <EmptyState
+            icon={RiFilterOffLine}
+            title="No cards match these tags"
+            description="Try removing a tag, or clear the filter to see every card in this folder."
+            actions={<GhostButton onClick={() => set({ tagFilter: [] })}>Clear filter</GhostButton>}
+          />
+        ) : done.length ? (
+          <EmptyState
+            icon={RiCheckDoubleLine}
+            title="All caught up"
+            description="Every card in this folder is done. You'll find them in Done below."
+            actions={newCard}
+            shortcut="N"
+          />
         ) : (
-          <div className="mt-4 grid place-items-center rounded-[14px] border border-dashed border-line-strong px-6 py-12 text-center">
-            <p className="font-serif text-[17px] font-medium text-ink-2">
-              {active.length ? "No cards with these tags" : "Nothing needs your attention"}
-            </p>
-            <p className="mt-1 text-[13px] text-muted">
-              {active.length ? (
-                "Clear the filter to see everything."
-              ) : (
-                <>
-                  Press <kbd className="rounded border border-line bg-window px-1 text-[11px]">N</kbd> or use + Add to
-                  capture something quick.
-                </>
-              )}
-            </p>
-          </div>
+          <EmptyState
+            icon={RiStickyNoteLine}
+            title="No cards yet"
+            description="Cards are for quick things that need your attention, like a task, a reminder, or a follow-up."
+            actions={newCard}
+            shortcut="N"
+          />
         )}
       </div>
 
