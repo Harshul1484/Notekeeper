@@ -1,8 +1,9 @@
-import { RiDeleteBinLine, RiFolderAddLine, RiPencilLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiFolderAddLine, RiLink, RiPencilLine } from "@remixicon/react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import { FOLDER_COLORS, folderDot } from "../../lib/colors";
+import { urlFor } from "../../lib/routes";
 import { createFolderAndRename } from "../../store/actions";
 import { folderSubtree, useData } from "../../store/data";
 import { useUI } from "../../store/ui";
@@ -65,6 +66,15 @@ function Menu({ folderId, x, y }: { folderId: string; x: number; y: number }) {
         }}
       >
         New subfolder
+      </MenuItem>
+      <MenuItem
+        icon={<RiLink size={15} />}
+        onClick={() => {
+          void navigator.clipboard?.writeText(urlFor({ view: { kind: "folder", folderId } }, useData.getState()));
+          close();
+        }}
+      >
+        Copy link
       </MenuItem>
       <div className="my-1 h-px bg-line" />
       <div className="px-2.5 pt-1 pb-2">

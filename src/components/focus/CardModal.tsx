@@ -10,12 +10,15 @@ import {
   RiPaletteLine,
   RiPushpinFill,
   RiPushpinLine,
+  RiLink,
 } from "@remixicon/react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { folderDot, pastelBg, pastelEdge, PASTELS } from "../../lib/colors";
 import { addDaysISO, dueLabel } from "../../lib/date";
 import { cn, uid } from "../../lib/util";
 import { completeCard, restoreCard } from "../../store/actions";
+import { useCopyLink } from "../../hooks/useCopyLink";
+import { urlFor } from "../../lib/routes";
 import { useData } from "../../store/data";
 import { useUI } from "../../store/ui";
 import type { FocusCard, Priority } from "../../types";
@@ -58,6 +61,7 @@ function CardDetail({ card }: { card: FocusCard }) {
   const ui = useUI.getState();
   const [newItem, setNewItem] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const link = useCopyLink();
 
   const patch = (p: Partial<FocusCard>) => updateCard(card.id, p);
   const close = () => ui.set({ openCardId: null });
@@ -113,6 +117,14 @@ function CardDetail({ card }: { card: FocusCard }) {
           {card.done && <span className="rounded-md bg-raise/70 px-1.5 py-0.5 text-[11px] font-medium text-ink">Done</span>}
         </span>
         <div className="ml-auto flex items-center">
+          <IconButton
+            aria-label="Copy link to this card"
+            title={link.copied ? "Link copied" : "Copy link"}
+            onClick={() => link.copy(urlFor({ view: { kind: "folder", folderId: card.folderId }, openCardId: card.id }, useData.getState()))}
+            className="text-ink-2 hover:bg-shade/5"
+          >
+            {link.copied ? <RiCheckLine size={16} /> : <RiLink size={16} />}
+          </IconButton>
           <IconButton
             aria-label={card.pinned ? "Unpin" : "Pin"}
             title={card.pinned ? "Unpin" : "Pin"}

@@ -524,6 +524,93 @@ body {
   outline: 2px solid var(--select);
 }
 
+/* Resizable images (TipTap ResizableNodeView). Handles show on hover/selection;
+   drag the image itself to move it (a drop line marks where it will land). */
+.notes-prose [data-resize-container] {
+  max-width: 100%;
+  margin: 0.4em 0;
+}
+
+.notes-prose [data-resize-wrapper] {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+.notes-prose [data-resize-wrapper] img {
+  display: block;
+  max-width: 100%;
+  /* Keep the natural ratio even when the column is narrower than the saved width. */
+  height: auto !important;
+  cursor: grab;
+}
+
+.notes-prose [data-resize-container].ProseMirror-selectednode [data-resize-wrapper],
+.notes-prose [data-resize-state="true"] [data-resize-wrapper] {
+  outline: 2px solid var(--select);
+  outline-offset: 2px;
+}
+
+.notes-prose [data-resize-handle] {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.notes-prose [data-resize-container]:hover [data-resize-handle],
+.notes-prose [data-resize-container].ProseMirror-selectednode [data-resize-handle],
+.notes-prose [data-resize-state="true"] [data-resize-handle] {
+  opacity: 1;
+}
+
+/* Corners: small squares */
+.notes-prose [data-resize-handle$="-left"],
+.notes-prose [data-resize-handle$="-right"] {
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 4px;
+  background: var(--panel);
+  border: 1.5px solid var(--select);
+}
+
+.notes-prose [data-resize-handle="top-left"],
+.notes-prose [data-resize-handle="bottom-right"] {
+  cursor: nwse-resize;
+}
+
+.notes-prose [data-resize-handle="top-right"],
+.notes-prose [data-resize-handle="bottom-left"] {
+  cursor: nesw-resize;
+}
+
+/* Side edges: a slim grab strip with a pill in the middle */
+.notes-prose [data-resize-handle="left"],
+.notes-prose [data-resize-handle="right"] {
+  width: 14px;
+  cursor: ew-resize;
+  display: grid;
+  place-items: center;
+}
+
+.notes-prose [data-resize-handle="left"] {
+  margin-left: -7px;
+}
+
+.notes-prose [data-resize-handle="right"] {
+  margin-right: -7px;
+}
+
+.notes-prose [data-resize-handle="left"]::after,
+.notes-prose [data-resize-handle="right"]::after {
+  content: "";
+  width: 5px;
+  height: 36px;
+  max-height: 40%;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1.5px solid var(--select);
+}
+
 .notes-prose hr {
   border: none;
   border-top: 1px solid var(--border);

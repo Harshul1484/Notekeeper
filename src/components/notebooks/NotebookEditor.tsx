@@ -5,6 +5,7 @@ import {
   RiPaletteLine,
   RiPushpinFill,
   RiPushpinLine,
+  RiLink,
 } from "@remixicon/react";
 import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -16,6 +17,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { folderDot, pastelBg, PASTELS } from "../../lib/colors";
 import { formatDate, relativeTime } from "../../lib/date";
 import { cn, htmlToText } from "../../lib/util";
+import { useCopyLink } from "../../hooks/useCopyLink";
+import { urlFor } from "../../lib/routes";
 import { useData } from "../../store/data";
 import { useUI } from "../../store/ui";
 import { IconButton } from "../ui/Buttons";
@@ -58,6 +61,7 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
   const set = useUI((s) => s.set);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const link = useCopyLink();
   const [notice, setNotice] = useState("");
   const noticeTimer = useRef<number | null>(null);
   const showNotice = (msg: string) => {
@@ -73,11 +77,23 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         link: { openOnClick: false, autolink: true },
+        // Visible line showing where a dragged image (or block) will land.
+        dropcursor: { color: "var(--select)", width: 2 },
       }),
       TaskList,
       TaskItem.configure({ nested: true }),
-      // Uploaded images are stored inline as data URLs; without this they'd be dropped on reload.
-      Image.configure({ allowBase64: true }),
+      Image.configure({
+        // Uploaded images are stored inline as data URLs; without this they'd be dropped on reload.
+        allowBase64: true,
+        // Drag corners or sides to resize; the node stays draggable to reorder.
+        resize: {
+          enabled: true,
+          directions: ["top-left", "top-right", "bottom-left", "bottom-right", "left", "right"],
+          minWidth: 80,
+          minHeight: 48,
+          alwaysPreserveAspectRatio: true,
+        },
+      }),
       Placeholder.configure({ placeholder: "Start writing…" }),
     ],
     content: notebook.content,
@@ -112,11 +128,18 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
 
   // Flush unsaved edits when leaving; discard notebooks that were never touched.
   useEffect(() => {
-    return () => {
+    const flush = () => {
       if (pending.current && editor) {
         window.clearTimeout(pending.current);
+        pending.current = null;
         useData.getState().updateNotebook(notebookId, { content: editor.getHTML() });
       }
+    };
+    // Also save on reload/close, which never unmounts the component.
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush();
       window.setTimeout(() => {
         if (useUI.getState().openNotebookId === notebookId) return; // remounted (StrictMode)
         const nb = useData.getState().notebooks.find((n) => n.id === notebookId);
@@ -169,6 +192,15 @@ export function NotebookEditor({ notebookId }: { notebookId: string }) {
             </Tooltip>
           )}
           <SaveIndicator state={saveState} />
+          <IconButton
+            aria-label="Copy link to this notebook"
+            title={link.copied ? "Link copied" : "Copy link"}
+            onClick={() =>
+              link.copy(urlFor({ view: { kind: "folder", folderId: notebook.folderId }, openNotebookId: notebookId }, useData.getState()))
+            }
+          >
+            {link.copied ? <RiCheckLine size={16} /> : <RiLink size={16} />}
+          </IconButton>
           <IconButton
             aria-label={notebook.pinned ? "Unpin notebook" : "Pin notebook"}
             title={notebook.pinned ? "Unpin" : "Pin"}

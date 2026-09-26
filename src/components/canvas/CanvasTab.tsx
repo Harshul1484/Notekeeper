@@ -6,11 +6,13 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type DragEvent as ReactDragEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { NEW_STICKY_EVENT } from "../../hooks/useGlobalHotkeys";
-import { clamp, isTypingTarget, readFileAsDataURL, uid } from "../../lib/util";
+import { imageFiles, imageSize, readImage } from "../../lib/images";
+import { clamp, isTypingTarget, uid } from "../../lib/util";
 import { useData } from "../../store/data";
 import { useUI, type Viewport } from "../../store/ui";
 import type { CanvasItem, Folder, Pastel } from "../../types";
@@ -41,7 +43,6 @@ type Interaction =
   | { kind: "arrow"; fromId: string };
 
 const TOOL_KEYS: Record<string, Tool> = { v: "select", s: "sticky", t: "text", f: "section", a: "arrow" };
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const randomTilt = () => Math.round((Math.random() * 4 - 2) * 10) / 10;
 
 export function CanvasTab({ folder }: { folder: Folder }) {
@@ -63,6 +64,14 @@ export function CanvasTab({ folder }: { folder: Folder }) {
   const [stickyColor, setStickyColor] = useState<Pastel>("butter");
   const [spaceDown, setSpaceDown] = useState(false);
   const [panning, setPanning] = useState(false);
+  const [fileDragOver, setFileDragOver] = useState(false);
+  const [notice, setNotice] = useState("");
+  const noticeTimer = useRef<number | null>(null);
+  const showNotice = (msg: string) => {
+    setNotice(msg);
+    if (noticeTimer.current) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(""), 4500);
+  };
 
   // Transient state while a gesture is in progress (committed on pointer up).
   const [drag, setDrag] = useState<{ ids: Set<string>; dx: number; dy: number } | null>(null);
@@ -215,20 +224,55 @@ export function CanvasTab({ folder }: { folder: Folder }) {
     [folderId],
   );
 
-  const insertImage = async (file: File) => {
-    if (file.size > MAX_IMAGE_BYTES) {
-      window.alert("That image is over 2 MB. Canvas images are stored in your browser, so keep them small.");
-      return;
+  /** Adds image files centered on `at` (default: middle of the view), fanned out slightly. */
+  const insertImages = async (files: File[], at?: Pt) => {
+    const center = at ?? viewportCenter();
+    const added: CanvasItem[] = [];
+    for (const file of files) {
+      try {
+        const src = await readImage(file);
+        const size = await imageSize(src);
+        const w = Math.min(320, size.w);
+        const h = Math.round(w * (size.h / size.w));
+        const offset = added.length * 28;
+        added.push({
+          id: uid(),
+          folderId,
+          type: "image",
+          x: center.x - w / 2 + offset,
+          y: center.y - h / 2 + offset,
+          w,
+          h,
+          rotation: 0,
+          color: stickyColor,
+          content: src,
+        });
+      } catch (err) {
+        showNotice((err as Error).message);
+      }
     }
-    const src = await readFileAsDataURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const w = Math.min(320, img.naturalWidth || 320);
-      const h = Math.round(w * ((img.naturalHeight || 240) / (img.naturalWidth || 320)));
-      const c = viewportCenter();
-      addItem({ type: "image", x: c.x - w / 2, y: c.y - h / 2, w, h, content: src });
-    };
-    img.src = src;
+    if (!added.length) return;
+    commit(folderId, [...useData.getState().canvasItems.filter((i) => i.folderId === folderId), ...added]);
+    setSelected(added.map((i) => i.id));
+    setTool("select");
+  };
+  const insertImagesRef = useRef(insertImages);
+  insertImagesRef.current = insertImages;
+
+  const onDragOver = (e: ReactDragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    if (!fileDragOver) setFileDragOver(true);
+  };
+
+  const onDrop = (e: ReactDragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    setFileDragOver(false);
+    const files = imageFiles(e.dataTransfer.files);
+    if (!files.length) return showNotice("Only images can be dropped on the canvas.");
+    void insertImages(files, toWorld(e.clientX, e.clientY));
   };
 
   /** Non-section items whose center sits inside a section travel with it. */
@@ -503,6 +547,15 @@ export function CanvasTab({ folder }: { folder: Folder }) {
     const up = (e: KeyboardEvent) => e.key === " " && setSpaceDown(false);
     const blur = () => setSpaceDown(false);
     const newSticky = () => createStickyRef.current();
+    // Paste images from the clipboard onto the canvas.
+    const paste = (e: ClipboardEvent) => {
+      if (isTypingTarget(e.target) || useUI.getState().openCardId) return;
+      const files = imageFiles(e.clipboardData?.files);
+      if (!files.length) return;
+      e.preventDefault();
+      void insertImagesRef.current(files);
+    };
+    window.addEventListener("paste", paste);
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", blur);
@@ -512,6 +565,7 @@ export function CanvasTab({ folder }: { folder: Folder }) {
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
       window.removeEventListener(NEW_STICKY_EVENT, newSticky);
+      window.removeEventListener("paste", paste);
     };
   }, []);
 
@@ -554,6 +608,12 @@ export function CanvasTab({ folder }: { folder: Folder }) {
       onPointerCancel={onPointerUp}
       onDoubleClick={onDoubleClick}
       onContextMenu={(e) => e.preventDefault()}
+      onDragEnter={onDragOver}
+      onDragOver={onDragOver}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setFileDragOver(false);
+      }}
+      onDrop={onDrop}
       role="application"
       aria-label={`${folder.name} canvas`}
     >
@@ -610,17 +670,36 @@ export function CanvasTab({ folder }: { folder: Folder }) {
         onFit={fit}
       />
       <p className="pointer-events-none absolute bottom-4 left-4 hidden text-[11.5px] text-subtle lg:block">
-        Space + drag to pan · Ctrl + scroll to zoom · Double-click to add a note
+        Space + drag to pan · Ctrl + scroll to zoom · Double-click to add a note · Drop or paste images
       </p>
+
+      {fileDragOver && (
+        <div className="anim-fade pointer-events-none absolute inset-3 z-30 grid place-items-center rounded-xl border-2 border-dashed border-select bg-select/10">
+          <p className="rounded-lg bg-panel px-3 py-1.5 text-[13px] font-medium text-ink shadow-(--shadow-float)">
+            Drop images to add them here
+          </p>
+        </div>
+      )}
+
+      {notice && (
+        <p
+          role="alert"
+          className="anim-rise absolute bottom-16 left-1/2 z-30 max-w-[90%] -translate-x-1/2 rounded-lg bg-(--tooltip-bg) px-3 py-1.5 text-[12.5px] text-(--tooltip-text) shadow-(--shadow-float)"
+        >
+          {notice}
+        </p>
+      )}
+
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         hidden
         onChange={(e) => {
-          const f = e.target.files?.[0];
+          const files = imageFiles(e.target.files);
           e.target.value = "";
-          if (f) insertImage(f);
+          if (files.length) void insertImages(files);
         }}
       />
     </div>

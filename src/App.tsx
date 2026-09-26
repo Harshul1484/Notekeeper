@@ -9,6 +9,7 @@ import { WindowChrome } from "./components/layout/WindowChrome";
 import { useGlobalHotkeys } from "./hooks/useGlobalHotkeys";
 import { useIsMobile } from "./hooks/useMediaQuery";
 import { useTheme } from "./hooks/useTheme";
+import { useUrlSync } from "./hooks/useUrlSync";
 import { cn } from "./lib/util";
 import { useData } from "./store/data";
 import { useUI } from "./store/ui";
@@ -73,6 +74,7 @@ export default function App() {
   const collapsed = useUI((s) => s.sidebarCollapsed);
   useGlobalHotkeys(isMobile);
   useTheme();
+  useUrlSync();
 
   return (
     <div className="flex h-dvh overflow-hidden bg-window">
