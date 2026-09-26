@@ -84,7 +84,7 @@ function RenameInput({ folder }: { folder: Folder }) {
   );
 }
 
-function FolderNode({ folder }: { folder: Folder }) {
+function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boolean }) {
   const folders = useData((s) => s.folders);
   const moveFolder = useData((s) => s.moveFolder);
   const expanded = useUI((s) => !!s.expanded[folder.id]);
@@ -153,7 +153,8 @@ function FolderNode({ folder }: { folder: Folder }) {
           openMenu(e.clientX, e.clientY);
         }}
         className={cn(
-          "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 pl-1.5 text-[13.5px] transition-colors duration-150 select-none",
+          "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 text-[13.5px] transition-colors duration-150 select-none",
+          nested ? "pl-0.5" : "pl-1.5",
           active ? "bg-active font-medium text-ink" : "text-ink-2 hover:bg-hover",
           drop === "inside" && "bg-select/10 ring-1 ring-select/60",
           drag.dragId === folder.id && "opacity-50",
@@ -170,7 +171,11 @@ function FolderNode({ folder }: { folder: Folder }) {
             e.stopPropagation();
             if (hasChildren) toggleExpanded(folder.id);
           }}
-          className={cn("grid h-full w-5 shrink-0 place-items-center rounded-md text-subtle", hasChildren && "hover:text-ink")}
+          className={cn(
+            "grid h-full shrink-0 place-items-center rounded-md text-subtle",
+            nested ? "w-4" : "w-5",
+            hasChildren && "hover:text-ink",
+          )}
         >
           {hasChildren && (
             <RiArrowRightSLine
@@ -207,9 +212,13 @@ function FolderNode({ folder }: { folder: Folder }) {
       </div>
 
       {hasChildren && expanded && (
-        <ul role="group" className="anim-fade mt-px ml-[30px] flex flex-col gap-px border-l border-line pl-1">
+        <ul
+          role="group"
+          // The guide line sits under this folder's dot (nested rows are tighter).
+          className={cn("anim-fade mt-px flex flex-col gap-px border-l border-line", nested ? "ml-[22px]" : "ml-[30px]")}
+        >
           {children.map((c) => (
-            <FolderNode key={c.id} folder={c} />
+            <FolderNode key={c.id} folder={c} nested />
           ))}
         </ul>
       )}
