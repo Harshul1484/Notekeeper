@@ -149,6 +149,8 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
         onDoubleClick={() => set({ renamingFolderId: folder.id })}
         className={cn(
           "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 text-[13.5px] transition-colors duration-150 select-none",
+          // While its ⋯ menu is open, keep the row highlighted and hide the count.
+          "has-[[aria-expanded=true]]:bg-hover [&:has([aria-expanded=true])_.folder-count]:hidden",
           nested ? "pl-0.5" : "pl-1.5",
           active ? "bg-active font-medium text-ink" : "text-ink-2 hover:bg-hover",
           drop === "inside" && "bg-select/10 ring-1 ring-select/60",
@@ -187,7 +189,7 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
         )}
         {!renaming && (
           <>
-            <span className="ml-2 text-[12px] text-subtle tabular-nums group-hover:hidden">{count || ""}</span>
+            <span className="folder-count ml-2 text-[12px] text-subtle tabular-nums group-hover:hidden">{count || ""}</span>
             <FolderDropdownMenu
               folder={folder}
               tooltip="More options"
@@ -196,7 +198,7 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
                   type="button"
                   aria-label={`${folder.name} options`}
                   onClick={(e) => e.stopPropagation()}
-                  className="ml-1 hidden size-5 place-items-center rounded-md text-muted hover:bg-shade/5 hover:text-ink group-hover:grid data-[state=open]:grid data-[state=open]:bg-shade/5"
+                  className="ml-1 hidden size-5 place-items-center rounded-md text-muted hover:bg-shade/5 hover:text-ink group-hover:grid aria-expanded:grid aria-expanded:bg-shade/5"
                 >
                   <RiMoreLine size={15} />
                 </button>
