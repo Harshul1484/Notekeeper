@@ -17,8 +17,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-hero-dark.png">
-    <img src="docs/assets/mockup-hero-light.png" alt="Notekeeper showing a folder's Focus view: a sidebar of colored folders, tag filters, and a grid of pastel cards" width="1000">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-hero-dark.webp">
+    <img src="docs/assets/mockup-hero-light.webp" alt="Notekeeper showing a folder's Focus view: a sidebar of colored folders, tag filters, and a grid of pastel cards" width="1000">
   </picture>
 </p>
 
@@ -36,8 +36,8 @@ Short cards for the things that need you soon. Each card has a due date, tags, a
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-focus-dark.png">
-    <img src="docs/assets/mockup-focus-light.png" alt="An open card with a due date, priority, tags, a checklist, and a linked notebook" width="900">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-focus-dark.webp">
+    <img src="docs/assets/mockup-focus-light.webp" alt="An open card with a due date, priority, tags, a checklist, and a linked notebook" width="900">
   </picture>
 </p>
 
@@ -47,19 +47,19 @@ Longer notes live in notebooks, with headings, checklists, quotes, code blocks, 
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-notebooks-dark.png">
-    <img src="docs/assets/mockup-notebooks-light.png" alt="The notebook editor with a formatting toolbar, a checklist, a bulleted list, and a quote" width="900">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-notebooks-dark.webp">
+    <img src="docs/assets/mockup-notebooks-light.webp" alt="The notebook editor with a formatting toolbar, a checklist, a bulleted list, and a quote" width="900">
   </picture>
 </p>
 
 ### Canvas
 
-An open canvas for planning. Add sticky notes, group them into sections like *This week*, *This month*, and *This year*, and draw connectors between them. Sections carry their notes when you move them, connectors follow along, and undo works for everything.
+An open canvas for planning. Add sticky notes, group them into sections like *Now*, *Next*, and *Later*, and draw connectors between them. Sections carry their notes when you move them, connectors follow along, and undo works for everything.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-canvas-dark.png">
-    <img src="docs/assets/mockup-canvas-light.png" alt="A planning canvas with three sections of sticky notes joined by curved arrows" width="900">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-canvas-dark.webp">
+    <img src="docs/assets/mockup-canvas-light.webp" alt="A planning canvas with Now, Next, and Later columns of sticky notes" width="900">
   </picture>
 </p>
 
@@ -102,7 +102,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The app starts with a few sample folders so you can look around; **Settings → Sample data** restores them at any time.
+Open http://localhost:5173. The app starts with a short Getting started tour and a few empty templates; **Settings → Sample data** restores them at any time.
 
 ### Keyboard shortcuts
 

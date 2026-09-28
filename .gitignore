@@ -25,3 +25,6 @@ yarn-error.log*
 # vite
 /dist
 *.local
+
+# README mockup sources (the README uses the .webp versions)
+/docs/assets/*.png

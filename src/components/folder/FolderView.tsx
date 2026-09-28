@@ -1,11 +1,14 @@
+import { lazy, Suspense } from "react";
 import { cn } from "../../lib/util";
 import { useUI } from "../../store/ui";
 import type { Folder } from "../../types";
-import { CanvasTab } from "../canvas/CanvasTab";
 import { FocusTab } from "../focus/FocusTab";
 import { NotebooksTab } from "../notebooks/NotebooksTab";
 import { FolderHeader } from "./FolderHeader";
 import { FolderTabs } from "./FolderTabs";
+
+// The canvas is only needed when its tab is open.
+const CanvasTab = lazy(() => import("../canvas/CanvasTab").then((m) => ({ default: m.CanvasTab })));
 
 export function FolderView({ folder }: { folder: Folder }) {
   const tab = useUI((s) => s.tab);
@@ -29,7 +32,11 @@ export function FolderView({ folder }: { folder: Folder }) {
           >
             {tab === "focus" && <FocusTab folder={folder} />}
             {tab === "notebooks" && <NotebooksTab folder={folder} />}
-            {tab === "canvas" && <CanvasTab folder={folder} />}
+            {tab === "canvas" && (
+              <Suspense fallback={null}>
+                <CanvasTab folder={folder} />
+              </Suspense>
+            )}
           </div>
         </section>
       </div>

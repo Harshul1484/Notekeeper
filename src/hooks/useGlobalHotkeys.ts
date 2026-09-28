@@ -42,7 +42,6 @@ export function useGlobalHotkeys(isMobile: boolean) {
       const ui = useUI.getState();
 
       if (e.key === "Escape") {
-        if (ui.folderMenu) return ui.set({ folderMenu: null });
         if (ui.openCardId) return ui.set({ openCardId: null });
         if (ui.settingsOpen) return ui.set({ settingsOpen: false });
         if (ui.drawerOpen) return ui.set({ drawerOpen: false });
@@ -52,7 +51,9 @@ export function useGlobalHotkeys(isMobile: boolean) {
       }
 
       if (e.defaultPrevented || isTypingTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (ui.openCardId || ui.settingsOpen || ui.folderMenu) return;
+      if (ui.openCardId || ui.settingsOpen) return;
+      // Keys typed into an open menu (Radix) belong to the menu.
+      if ((e.target as Element | null)?.closest?.("[role=menu]")) return;
 
       if (e.key === "/") {
         e.preventDefault();

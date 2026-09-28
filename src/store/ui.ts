@@ -11,12 +11,6 @@ export interface Viewport {
   zoom: number;
 }
 
-export interface FolderMenu {
-  folderId: string;
-  x: number;
-  y: number;
-}
-
 interface UIState {
   view: View;
   tab: Tab;
@@ -27,7 +21,6 @@ interface UIState {
   openCardId: string | null;
   openNotebookId: string | null;
   renamingFolderId: string | null;
-  folderMenu: FolderMenu | null;
   settingsOpen: boolean;
   notebookLayout: "grid" | "list";
   cardSort: CardSort;
@@ -58,7 +51,6 @@ export const useUI = create<UIState>()(
       openCardId: null,
       openNotebookId: null,
       renamingFolderId: null,
-      folderMenu: null,
       settingsOpen: false,
       notebookLayout: "grid",
       cardSort: "updated",

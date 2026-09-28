@@ -503,7 +503,8 @@ export function CanvasTab({ folder }: { folder: Folder }) {
   const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
   keyHandler.current = (e: KeyboardEvent) => {
     const ui = useUI.getState();
-    if (ui.openCardId || ui.settingsOpen || ui.folderMenu || isTypingTarget(e.target)) return;
+    if (ui.openCardId || ui.settingsOpen || isTypingTarget(e.target)) return;
+    if ((e.target as Element | null)?.closest?.("[role=menu]")) return;
     const mod = e.metaKey || e.ctrlKey;
     const k = e.key.toLowerCase();
 

@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect } from "react";
 import { CardModal } from "./components/focus/CardModal";
 import { FolderView } from "./components/folder/FolderView";
 import { QuickViewPage } from "./components/folder/QuickViewPage";
-import { FolderContextMenu } from "./components/layout/FolderContextMenu";
 import { SettingsModal } from "./components/layout/SettingsModal";
 import { Sidebar } from "./components/layout/Sidebar";
 import { WindowChrome } from "./components/layout/WindowChrome";
@@ -98,7 +97,6 @@ export default function App() {
       {isMobile && <MobileDrawer />}
       <CardModal />
       <SettingsModal />
-      <FolderContextMenu />
     </div>
   );
 }

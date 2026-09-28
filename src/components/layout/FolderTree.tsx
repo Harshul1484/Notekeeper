@@ -7,7 +7,7 @@ import { folderSubtree, useData, type DropPosition } from "../../store/data";
 import { sortedChildren, useFolderCounts } from "../../store/selectors";
 import { useUI } from "../../store/ui";
 import type { Folder } from "../../types";
-import { Tooltip } from "../ui/Tooltip";
+import { FolderContextMenu, FolderDropdownMenu } from "./FolderMenu";
 
 interface DragState {
   dragId: string | null;
@@ -121,8 +121,6 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
     drag.setDrop(null);
   };
 
-  const openMenu = (x: number, y: number) => set({ folderMenu: { folderId: folder.id, x, y } });
-
   return (
     <li
       role="treeitem"
@@ -130,6 +128,7 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
       aria-expanded={hasChildren ? expanded : undefined}
       aria-selected={active}
     >
+      <FolderContextMenu folder={folder}>
       <div
         draggable={!renaming}
         onDragStart={(e) => {
@@ -148,10 +147,6 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
         }}
         onClick={() => openFolder(folder.id)}
         onDoubleClick={() => set({ renamingFolderId: folder.id })}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          openMenu(e.clientX, e.clientY);
-        }}
         className={cn(
           "group relative flex h-[30px] cursor-pointer items-center rounded-lg pr-1.5 text-[13.5px] transition-colors duration-150 select-none",
           nested ? "pl-0.5" : "pl-1.5",
@@ -193,23 +188,24 @@ function FolderNode({ folder, nested = false }: { folder: Folder; nested?: boole
         {!renaming && (
           <>
             <span className="ml-2 text-[12px] text-subtle tabular-nums group-hover:hidden">{count || ""}</span>
-            <Tooltip label="More options">
-              <button
-                type="button"
-                aria-label={`${folder.name} options`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const r = e.currentTarget.getBoundingClientRect();
-                  openMenu(r.left, r.bottom + 4);
-                }}
-                className="ml-1 hidden size-5 place-items-center rounded-md text-muted hover:bg-shade/5 hover:text-ink group-hover:grid"
-              >
-                <RiMoreLine size={15} />
-              </button>
-            </Tooltip>
+            <FolderDropdownMenu
+              folder={folder}
+              tooltip="More options"
+              trigger={
+                <button
+                  type="button"
+                  aria-label={`${folder.name} options`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="ml-1 hidden size-5 place-items-center rounded-md text-muted hover:bg-shade/5 hover:text-ink group-hover:grid data-[state=open]:grid data-[state=open]:bg-shade/5"
+                >
+                  <RiMoreLine size={15} />
+                </button>
+              }
+            />
           </>
         )}
       </div>
+      </FolderContextMenu>
 
       {hasChildren && expanded && (
         <ul
