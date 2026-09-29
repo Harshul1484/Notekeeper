@@ -25,6 +25,8 @@ npm run dev        # http://localhost:5173
 | `npm run typecheck` | Runs TypeScript only |
 | `npm run build` | Typechecks and builds to `dist/` |
 | `npm run preview` | Serves the production build |
+| `npm test` | Runs the unit tests |
+| `npm run test:db` | Runs the database tests against a local Supabase stack (needs Docker; start it with `npx supabase start`) |
 
 Notes are saved in your browser's `localStorage`. To start fresh, use **Settings → Sample data → Reset**, or clear the site data for `localhost:5173`.
 

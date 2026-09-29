@@ -118,6 +118,8 @@ npm run dev        # start the dev server
 npm run build      # typecheck and build to dist/
 npm run preview    # serve the production build
 npm run typecheck  # run TypeScript only
+npm test           # run the unit tests
+npm run test:db    # run the database tests (needs Docker and `npx supabase start`)
 ```
 
 Built with React 19, TypeScript, Vite, Tailwind CSS 4, Zustand, TipTap, react-day-picker, Radix UI, and Remix Icon.
