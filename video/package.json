@@ -1,0 +1,14 @@
+{
+  "name": "notekeeper-demo-video",
+  "private": true,
+  "type": "module",
+  "description": "Records the Notekeeper product demo from the built app (see demo/FILM.md).",
+  "scripts": {
+    "sheet": "node demo/record.mjs sheet 1 0 84",
+    "preview": "node demo/record.mjs preview",
+    "full": "node demo/record.mjs full"
+  },
+  "dependencies": {
+    "playwright-core": "1.60.0"
+  }
+}

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Notekeeper film stage</title>
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="/__demo/fonts/fonts.css" />
+<style>
+  :root {
+    --backdrop: #e9e4dc;
+    --ink: #22201c;
+    --ink-2: #5d5850;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--backdrop); }
+  body { font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  #bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(1200px 700px at 50% 42%, rgba(255,255,255,0.55), rgba(255,255,255,0) 70%),
+      var(--backdrop);
+  }
+  #win {
+    position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+    transform-origin: 0 0; border-radius: 22px; overflow: hidden;
+    background: #fbf9f6;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 6px rgba(40,30,20,0.06), 0 30px 80px rgba(40,30,20,0.18), 0 0 0 1px rgba(40,30,20,0.08);
+    will-change: transform;
+  }
+  #app { width: 1920px; height: 1080px; border: 0; display: block; }
+  #cursor { position: absolute; left: 0; top: 0; width: 32px; height: 32px; transform-origin: 3px 2px; pointer-events: none; z-index: 20; }
+  .ripple { position: absolute; border-radius: 50%; border: 2px solid rgba(34,32,28,0.5); pointer-events: none; z-index: 19; }
+  .line {
+    position: absolute; left: 0; right: 0; text-align: center;
+    font-family: Fraunces, Georgia, serif; font-weight: 500; color: var(--ink);
+    letter-spacing: -0.015em;
+  }
+  #intro, #hero, #caption, #ripples, .line { pointer-events: none; }
+  #intro .line { font-size: 76px; }
+  #caption {
+    position: absolute; left: 50%; bottom: 64px; z-index: 30;
+    padding: 16px 30px 17px; border-radius: 999px;
+    background: rgba(253,251,248,0.92); color: var(--ink);
+    box-shadow: 0 10px 40px rgba(30,24,16,0.18), 0 0 0 1px rgba(30,24,16,0.06);
+    font-family: Fraunces, Georgia, serif; font-size: 32px; font-weight: 500; letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  #hero-title { font-size: 104px; font-weight: 600; top: 64px; }
+  #hero-line { font-family: Inter, sans-serif; font-size: 30px; font-weight: 400; color: var(--ink-2); top: 200px; letter-spacing: 0; }
+  #hero-mark { position: absolute; width: 84px; height: 84px; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="intro"></div>
+<div id="win"><iframe id="app" src="/" tabindex="-1"></iframe></div>
+<div id="ripples"></div>
+<svg id="cursor" viewBox="0 0 32 32" aria-hidden="true">
+  <path d="M5 3 L5 25 L10.5 19.8 L14.2 28.2 L18.2 26.4 L14.6 18.2 L22 18.2 Z" fill="#111" stroke="#fff" stroke-width="1.9" stroke-linejoin="round" />
+</svg>
+<div id="caption"></div>
+<div id="hero">
+  <div id="hero-title" class="line"></div>
+  <div id="hero-line" class="line"></div>
+</div>
+
+<script type="module">
+  import { camera, step, presence, INTRO, INTRO_OUT, CAPTIONS, HERO, CURSOR_VISIBLE } from "/__demo/timeline.mjs";
+
+  const $ = (id) => document.getElementById(id);
+  const win = $("win"), cursor = $("cursor"), caption = $("caption"), ripples = $("ripples");
+  const frame = $("app");
+
+  // Intro lines (stacked, centered).
+  const introEls = INTRO.map(([, text], i) => {
+    const el = document.createElement("div");
+    el.className = "line";
+    el.textContent = text;
+    el.style.top = `${360 + i * 112}px`;
+    $("intro").appendChild(el);
+    return el;
+  });
+  $("hero-title").textContent = HERO.title;
+  $("hero-line").textContent = HERO.line;
+
+  const ease = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+
+  /** Animations inside the app: paused and driven by virtual time. */
+  const firstSeen = new WeakMap();
+  function syncAnimations(nowMs) {
+    const doc = frame.contentDocument;
+    if (!doc) return 0;
+    const anims = doc.getAnimations();
+    for (const a of anims) {
+      if (!firstSeen.has(a)) firstSeen.set(a, nowMs);
+      if (a.playState !== "paused") a.pause();
+      a.currentTime = nowMs - firstSeen.get(a);
+    }
+    frame.contentWindow.__demoCaret?.();
+    return anims.length;
+  }
+
+  /**
+   * Draw the stage at time t (seconds).
+   * cur: { x, y } cursor in app coordinates, down: button held, ripples: [{ t0, x, y }] (app coords)
+   */
+  function seek(t, cur = null) {
+    const cam = camera(t);
+    win.style.transform = `translate(${cam.tx}px, ${cam.ty}px) scale(${cam.s})`;
+    win.style.opacity = String(ease(cam.reveal * 1.6));
+    win.style.borderRadius = `${22 / cam.s}px`;
+
+    // Intro lines: each rises in on its cue, all leave together.
+    INTRO.forEach(([tin], i) => {
+      const p = presence(t, tin, INTRO_OUT + i * 0.08, 7);
+      const el = introEls[i];
+      el.style.opacity = String(p);
+      el.style.transform = `translateY(${(1 - step(t - tin, 7, 1)) * 26 - step(t - INTRO_OUT - i * 0.08, 7, 1) * 18}px)`;
+      el.style.filter = `blur(${(1 - p) * 6}px)`;
+    });
+
+    // Caption: one at a time.
+    let cap = null;
+    for (const c of CAPTIONS) if (t >= c[0] - 0.6 && t <= c[1] + 0.8) cap = c;
+    if (cap) {
+      const p = presence(t, cap[0], cap[1], 8);
+      caption.textContent = cap[2];
+      caption.style.opacity = String(p);
+      caption.style.transform = `translate(-50%, ${(1 - p) * 16}px)`;
+    } else caption.style.opacity = "0";
+
+    // Hero title.
+    const h = step(t - HERO.tin, 4.5, 1), h2 = step(t - HERO.tin - 0.35, 4.5, 1);
+    $("hero-title").style.opacity = String(h);
+    $("hero-title").style.transform = `translateY(${(1 - h) * 22}px)`;
+    $("hero-line").style.opacity = String(h2);
+    $("hero-line").style.transform = `translateY(${(1 - h2) * 18}px)`;
+
+    // Cursor (drawn in screen space, sized with the camera like a zoomed screen recording).
+    const vis = presence(t, CURSOR_VISIBLE[0], CURSOR_VISIBLE[1], 10);
+    if (cur && vis > 0.001) {
+      const sx = cam.tx + cur.x * cam.s, sy = cam.ty + cur.y * cam.s;
+      const size = 0.84 * Math.pow(cam.s, 0.8);
+      const press = cur.down ? 0.86 : 1;
+      cursor.style.opacity = String(vis);
+      cursor.style.transform = `translate(${sx - 3}px, ${sy - 2}px) scale(${size * press})`;
+      ripples.innerHTML = "";
+      for (const r of cur.ripples ?? []) {
+        const age = t - r.t0;
+        if (age < 0 || age > 0.5) continue;
+        const k = step(age, 12, 1);
+        const rad = (6 + k * 22) * cam.s;
+        const el = document.createElement("div");
+        el.className = "ripple";
+        const [rx, ry] = [cam.tx + r.x * cam.s, cam.ty + r.y * cam.s];
+        el.style.left = `${rx - rad}px`; el.style.top = `${ry - rad}px`;
+        el.style.width = el.style.height = `${rad * 2}px`;
+        el.style.opacity = String((1 - k) * 0.7 * vis);
+        el.style.borderWidth = `${1.6 * cam.s}px`;
+        ripples.appendChild(el);
+      }
+    } else {
+      cursor.style.opacity = "0";
+      ripples.innerHTML = "";
+    }
+    return cam;
+  }
+
+  window.stage = { seek, syncAnimations, camera };
+  window.stageReady = true;
+</script>
+</body>
+</html>
