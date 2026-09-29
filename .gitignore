@@ -28,7 +28,3 @@ yarn-error.log*
 
 # README mockup sources (the README uses the .webp versions)
 /docs/assets/*.png
-
-# demo video renders and tooling
-/video/out/
-/video/node_modules/
