@@ -16,10 +16,11 @@
 </p>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-hero-dark.webp">
-    <img src="docs/assets/mockup-hero-light.webp" alt="Notekeeper showing a folder's Focus view: a sidebar of colored folders, tag filters, and a grid of pastel cards" width="1000">
-  </picture>
+  <a href="docs/assets/notekeeper-demo.mp4">
+    <img src="docs/assets/demo-preview.webp" alt="Notekeeper's Goals canvas: a sticky note is dragged from Later into Now, a new note is added, and an arrow connects two notes" width="1000">
+  </a>
+  <br>
+  <a href="docs/assets/notekeeper-demo.mp4"><strong>▶ Watch the demo</strong></a> · 1 min 24 s, with sound
 </p>
 
 ## What is Notekeeper?
@@ -27,6 +28,13 @@
 Notekeeper is a personal notes and planning app for people who want their to-dos, writing, and goals in one calm place, without the weight of a project-management tool.
 
 Everything lives in folders. Each folder has three views of the same work: **Focus** for small things that need attention soon, **Notebooks** for longer writing, and **Canvas** for mapping out plans visually. There's no account and no server; your notes are saved in your browser.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/mockup-hero-dark.webp">
+    <img src="docs/assets/mockup-hero-light.webp" alt="Notekeeper showing a folder's Focus view: a sidebar of colored folders, tag filters, and a grid of pastel cards" width="1000">
+  </picture>
+</p>
 
 ## Features
 
